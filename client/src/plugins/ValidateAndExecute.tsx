@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import useAsync from '../utils/useAsync';
+// import useAsync from '../utils/useAsync';
 
 export default function ValidateAndExecutePlugin(system: any) {
   return {
     wrapComponents: {
       execute: (OGExecute: any, system: any) => (props: any) => {
-        console.log(system);
+        // console.log(system);
 
         const handleValidateParameters = () => {
           console.log('Validate parameter started');
@@ -57,6 +57,9 @@ export default function ValidateAndExecutePlugin(system: any) {
           console.log({
             props: props,
             specStr: specSelectors.specStr(),
+            specJson: specSelectors.specJson().toJS(),
+            specJsonWithResolvedSubtrees:
+              specSelectors.specJsonWithResolvedSubtrees(),
           });
 
           if (!oas3ValidateBeforeExecuteSuccess) {
@@ -160,11 +163,12 @@ export default function ValidateAndExecutePlugin(system: any) {
           // create Parameter
           const parameter = createParameters(props);
           const reqBody = oas3Selectors.requestBodyValue(path, method);
-          const RequestBodyContentType = oas3Selectors.requestContentType(
+          const requestBodyContentType = oas3Selectors.requestContentType(
             path,
             method
           );
-          const specStr = specSelectors.specStr();
+          // const specStr = specSelectors.specStr();
+          const specJson = specSelectors.specJson().toJS();
 
           setState({
             isLoading: true,
@@ -173,8 +177,9 @@ export default function ValidateAndExecutePlugin(system: any) {
               method,
               parameter,
               reqBody,
-              RequestBodyContentType,
-              specStr,
+              requestBodyContentType,
+              // specStr,
+              specJson,
             },
           });
           // setRequest({
@@ -189,6 +194,7 @@ export default function ValidateAndExecutePlugin(system: any) {
         };
 
         const validateRequest = (request: any) => {
+          console.log('making request: ', request);
           return window
             .fetch('http://localhost:3000/validate', {
               method: 'POST',

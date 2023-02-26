@@ -73,12 +73,12 @@ button:focus-visible {
   display: flex;
 }
 
-.editor-wrapper {
+.pane-1 {
   width: 50%;
   overflow-y: scroll;
 }
 
-.swagger-ui-wrapper {
+.pane-2 {
   width: 50%;
   height: 100%;
   /* overflow-y: scroll; */

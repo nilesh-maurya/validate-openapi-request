@@ -5,6 +5,7 @@ const data = require("./spec.json");
 
 async function init() {
   try {
+    console.log(data);
     const api = await SwaggerParser.validate(data);
     console.log(
       JSON.stringify(api.paths["/vaults/{vaultUuid}/items"].post.requestBody)
