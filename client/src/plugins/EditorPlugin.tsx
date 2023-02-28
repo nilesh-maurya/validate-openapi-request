@@ -1,5 +1,6 @@
 import React from 'react';
 import Editor, { EditorProps } from '@monaco-editor/react';
+import { Allotment, setSashSize } from 'allotment';
 
 export default function EditorPlugin() {
   return {
@@ -14,13 +15,13 @@ export default function EditorPlugin() {
         const [language, setLanguage] = React.useState('JSON');
         const [theme, setTheme] = React.useState('vs-dark');
 
+        setSashSize(30);
         return (
-          <>
-            <div className="container">
+          <Allotment>
+            <Allotment.Pane>
               <div className="editor-plugin-wrapper editor-wrapper pane-1">
                 <Editor
                   className="editor"
-                  height="100%"
                   theme={theme}
                   language={language}
                   value={value}
@@ -34,12 +35,13 @@ export default function EditorPlugin() {
                   }}
                 />
               </div>
-              <div className="resizer" />
+            </Allotment.Pane>
+            <Allotment.Pane>
               <div className="pane-2">
                 <OGBaseLayout {...props} />
               </div>
-            </div>
-          </>
+            </Allotment.Pane>
+          </Allotment>
         );
       },
     },
