@@ -9,8 +9,6 @@ app.use(bodyParser.json());
 app.use(cors());
 
 app.post("/validate", async (req, res) => {
-  // console.log(req.body);
-
   const specObj = {
     path: req.body.path,
     method: req.body.method,
@@ -18,10 +16,22 @@ app.post("/validate", async (req, res) => {
     requestBodyContentType: req.body.requestBodyContentType,
   };
 
+  if (specObj.requestBodyContentType != "application/json") {
+    return res.json({
+      resultStatus: "Failed",
+      error: [
+        {
+          message:
+            "Unsupported media type, Make sure request body is application/json",
+        },
+      ],
+    });
+  }
+
   const requestObj = {
     headers: {
       "content-type": req.body.requestBodyContentType,
-      ...req.body.parameter.headers,
+      ...req.body.parameter.header,
     },
     query: {
       ...req.body.parameter.query,
@@ -33,7 +43,7 @@ app.post("/validate", async (req, res) => {
   };
 
   const result = await validate(specObj, requestObj);
-  console.log(result);
+  // console.dir(result);
   res.json({
     resultStatus: "Success",
     error: result != undefined ? result : null,

@@ -4,12 +4,100 @@ const { json } = require("body-parser");
 const OpenAPIRequestValidator = require("openapi-request-validator").default;
 const cloneDeep = require("lodash.clonedeep");
 
-const defaultFn = (prop) => {
-  if (prop) {
-    return prop;
+function getParametersForOpenApiRV({ parsedSpec, path, method }) {
+  return parsedSpec.paths[path][method].parameters;
+}
+
+function getRequestBodyForOpenApiRV({
+  parsedSpec,
+  path,
+  method,
+  requestBodyContentType,
+}) {
+  const requestBody = cloneDeep(parsedSpec.paths[path][method].requestBody);
+  requestBody.content[requestBodyContentType].schema = {
+    $ref: "#/definitions/RequestBody",
+  };
+
+  return requestBody;
+}
+
+function addAdditionalProperties(obj, { additionalProperties }) {
+  if (typeof additionalProperties != "undefined") {
+    obj.additionalProperties = additionalProperties;
   }
-  return null;
-};
+}
+
+function addNullableProp(obj, { nullable }) {
+  if (typeof nullable != "undefined") {
+    obj.nullable = nullable;
+  }
+}
+
+function traverseSchema(schema, option) {
+  const hasOwnProperty = Object.prototype.hasOwnProperty;
+  let newSchema = cloneDeep(schema);
+  const PROPERTIES = "properties";
+  const TYPE = "type";
+  const ITEMS = "items";
+  for (let prop in schema) {
+    if (option.excludeList.includes(prop)) {
+      delete newSchema[prop];
+    } else {
+      if (prop == TYPE && hasOwnProperty.call(schema, TYPE)) {
+        addAdditionalProperties(newSchema, option);
+        addNullableProp(newSchema, option);
+      }
+
+      if (prop === PROPERTIES && hasOwnProperty.call(schema, PROPERTIES)) {
+        for (let eachProp in schema[PROPERTIES]) {
+          if (hasOwnProperty.call(schema[PROPERTIES], eachProp)) {
+            if (
+              hasOwnProperty.call(schema[PROPERTIES][eachProp], PROPERTIES) ||
+              hasOwnProperty.call(schema[PROPERTIES][eachProp], ITEMS)
+            ) {
+              newSchema[PROPERTIES][eachProp] = traverseSchema(
+                schema[PROPERTIES][eachProp],
+                option
+              );
+              continue;
+            }
+
+            if (option.nullable && newSchema[PROPERTIES][eachProp]["enum"]) {
+              newSchema[PROPERTIES][eachProp]["enum"].push(null);
+            }
+            addNullableProp(newSchema[PROPERTIES][eachProp], option);
+            addAdditionalProperties(newSchema[PROPERTIES][eachProp], option);
+          }
+        }
+      } else if (prop == ITEMS && hasOwnProperty.call(schema, ITEMS)) {
+        newSchema[ITEMS] = traverseSchema(schema[ITEMS], option);
+      }
+    }
+  }
+
+  return newSchema;
+}
+
+function getRequestBodySchemaForOpenApiRV({
+  parsedSpec,
+  path,
+  method,
+  requestBodyContentType,
+}) {
+  const schema =
+    parsedSpec.paths[path][method].requestBody.content[requestBodyContentType]
+      .schema;
+
+  const option = {
+    nullable: false,
+    additionalProperties: false,
+    excludeList: ["x-swagger-router-model", "xml"],
+  };
+  const newSchema = traverseSchema(schema, option);
+  console.log(newSchema);
+  return newSchema;
+}
 
 async function getRequestValidator({
   path,
@@ -18,39 +106,32 @@ async function getRequestValidator({
   requestBodyContentType,
 }) {
   const parsedSpec = await SwaggerParser.validate(specJson);
-  // console.log(JSON.stringify(parsedSpec.paths[path][method]));
-  const requestBody = cloneDeep(parsedSpec.paths[path][method].requestBody);
+  const parsedSpecCopy = cloneDeep(parsedSpec);
 
-  requestBody.content[requestBodyContentType].schema = {
-    $ref: "#/definitions/RequestBody",
+  const opt = {
+    parsedSpec: parsedSpecCopy,
+    path,
+    method,
+    requestBodyContentType,
   };
-  const parameters = parsedSpec.paths[path][method].parameters;
-  const schemaForCurrentContentType =
-    parsedSpec.paths[path][method].requestBody.content[requestBodyContentType]
-      .schema;
-
-  console.log(schemaForCurrentContentType, requestBodyContentType);
-
   const customOption = {
-    parameters,
-    requestBody,
+    parameters: getParametersForOpenApiRV(opt),
+    // will provide ref (actual schema is provided in schemas:RequestBody)
+    requestBody: getRequestBodyForOpenApiRV(opt),
     schemas: {
-      RequestBody: {
-        type: schemaForCurrentContentType.type,
-        required: schemaForCurrentContentType.required,
-        properties: schemaForCurrentContentType.properties,
-        additionalProperties: false,
-      },
+      RequestBody: getRequestBodySchemaForOpenApiRV(opt),
     },
     errorTransformer: (openApiError, jsonSchemaError) => {
-      console.log({ openApiError, jsonSchemaError });
-
+      console.log({ jsonSchemaError });
       return jsonSchemaError;
     },
     // customFormats: defaultFn(specOption.customFormats),
+    ajvOptions: {
+      allErrors: true,
+    },
   };
 
-  console.log(JSON.stringify(customOption));
+  // console.log(JSON.stringify(customOption));
   return new OpenAPIRequestValidator(customOption);
 }
 

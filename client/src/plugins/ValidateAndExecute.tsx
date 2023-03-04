@@ -103,9 +103,10 @@ export default function ValidateAndExecutePlugin(system: any) {
             .toJS();
 
           const parameter: Record<string, any> = {
-            headers: {},
+            header: {},
             query: {},
             path: {},
+            cookie: {},
           };
           for (const [key, value] of Object.entries(parameterValues)) {
             // console.log(`Key: ${key}, value: ${value}`);
