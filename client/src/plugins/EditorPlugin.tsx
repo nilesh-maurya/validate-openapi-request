@@ -8,6 +8,9 @@ export default function EditorPlugin() {
       BaseLayout: (OGBaseLayout: any, system: any) => (props: any) => {
         const editorOptions: EditorProps['options'] = {
           wordWrap: 'on',
+          minimap: {
+            enabled: false,
+          },
         };
 
         const { specSelectors, specActions } = props;

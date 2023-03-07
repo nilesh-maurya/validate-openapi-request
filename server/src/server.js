@@ -43,9 +43,8 @@ app.post("/validate", async (req, res) => {
   };
 
   const result = await validate(specObj, requestObj);
-  // console.dir(result);
   res.json({
-    resultStatus: "Success",
+    resultStatus: result != undefined ? "Failed" : "Success",
     error: result != undefined ? result : null,
   });
 });

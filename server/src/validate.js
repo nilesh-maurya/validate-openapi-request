@@ -63,11 +63,13 @@ function traverseSchema(schema, option) {
               continue;
             }
 
-            if (option.nullable && newSchema[PROPERTIES][eachProp]["enum"]) {
-              newSchema[PROPERTIES][eachProp]["enum"].push(null);
+            if (hasOwnProperty.call(schema[PROPERTIES][eachProp], TYPE)) {
+              if (option.nullable && newSchema[PROPERTIES][eachProp]["enum"]) {
+                newSchema[PROPERTIES][eachProp]["enum"].push(null);
+              }
+              addNullableProp(newSchema[PROPERTIES][eachProp], option);
+              addAdditionalProperties(newSchema[PROPERTIES][eachProp], option);
             }
-            addNullableProp(newSchema[PROPERTIES][eachProp], option);
-            addAdditionalProperties(newSchema[PROPERTIES][eachProp], option);
           }
         }
       } else if (prop == ITEMS && hasOwnProperty.call(schema, ITEMS)) {
@@ -95,7 +97,7 @@ function getRequestBodySchemaForOpenApiRV({
     excludeList: ["x-swagger-router-model", "xml"],
   };
   const newSchema = traverseSchema(schema, option);
-  console.log(newSchema);
+  // console.log(JSON.stringify(newSchema));
   return newSchema;
 }
 
@@ -107,7 +109,7 @@ async function getRequestValidator({
 }) {
   const parsedSpec = await SwaggerParser.validate(specJson);
   const parsedSpecCopy = cloneDeep(parsedSpec);
-
+  // console.log(JSON.stringify(parsedSpecCopy));
   const opt = {
     parsedSpec: parsedSpecCopy,
     path,
@@ -121,8 +123,36 @@ async function getRequestValidator({
     schemas: {
       RequestBody: getRequestBodySchemaForOpenApiRV(opt),
     },
-    errorTransformer: (openApiError, jsonSchemaError) => {
-      console.log({ jsonSchemaError });
+    errorTransformer: (_, jsonSchemaError) => {
+      if (jsonSchemaError.instancePath.startsWith("/body")) {
+        jsonSchemaError.instancePath = jsonSchemaError.instancePath.slice(5);
+        if (jsonSchemaError.instancePath == "") {
+          jsonSchemaError.instancePath = "/";
+        }
+      }
+
+      jsonSchemaError.customMessage = `ERROR - Path: '${jsonSchemaError.instancePath}' `;
+
+      switch (jsonSchemaError.keyword) {
+        case "type":
+          jsonSchemaError.customMessage += `${jsonSchemaError.message}`;
+          break;
+
+        case "required":
+          jsonSchemaError.customMessage += `has missing required properties: '${jsonSchemaError.params.missingProperty}'`;
+          break;
+
+        case "additionalProperties":
+          jsonSchemaError.customMessage += `has properties which are not allowed by the schema: '${jsonSchemaError.params.additionalProperty}'`;
+          break;
+
+        default:
+          break;
+      }
+
+      console.log({
+        jsonSchemaError,
+      });
       return jsonSchemaError;
     },
     // customFormats: defaultFn(specOption.customFormats),
