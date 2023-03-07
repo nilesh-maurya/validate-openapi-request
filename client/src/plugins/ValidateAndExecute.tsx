@@ -5,8 +5,6 @@ export default function ValidateAndExecutePlugin(system: any) {
   return {
     wrapComponents: {
       execute: (OGExecute: any, system: any) => (props: any) => {
-        // console.log(system);
-
         const handleValidateParameters = () => {
           console.log('Validate parameter started');
           let { specSelectors, specActions, path, method } = props;
@@ -64,6 +62,7 @@ export default function ValidateAndExecutePlugin(system: any) {
 
           if (!oas3ValidateBeforeExecuteSuccess) {
             validationErrors.missingBodyValue = true;
+            console.log('Body:', { validationErrors });
             oas3Actions.setRequestBodyValidateError({
               path,
               method,
@@ -109,58 +108,33 @@ export default function ValidateAndExecutePlugin(system: any) {
             cookie: {},
           };
           for (const [key, value] of Object.entries(parameterValues)) {
-            // console.log(`Key: ${key}, value: ${value}`);
             const [reqField, fieldName] = key.split('.');
-            parameter[reqField][fieldName] = value;
+            if (parameter[reqField]) {
+              parameter[reqField][fieldName] = value;
+            } else {
+              console.error(
+                `parameter: '${reqField}' is invalid, Please check OpenAPI Specification documentation (https://swagger.io/specification/#parameter-object)`
+              );
+            }
           }
 
           return parameter;
         };
 
-        // const [request, setRequest] = useState<any>(null);
-        // const [isLoading, setIsLoading] = React.useState(false);
-        const [state, setState] = useState<any>({ isLoading: false });
-
-        // const { data, error, status, run } = useAsync({
-        //   status: 'idle',
-        //   data: null,
-        //   error: null,
-        // });
+        const [state, setState] = useState<any>({
+          isLoading: false,
+          validationErrors: [],
+        });
 
         React.useEffect(() => {
           if (state.isLoading) {
-            // run(
-            //   );
             validateRequest(state.request);
           }
         }, [state.request]);
 
-        // switch (status) {
-        //   case 'idle':
-        //     break;
-        //   case 'pending':
-        //     setIsLoading(true);
-        //     break;
-        //   case 'rejected':
-        //     throw error;
-        //   case 'resolved':
-        //     setIsLoading(false);
-        //     break;
-        //   default:
-        //     throw new Error('This should be impossible');
-        // }
-
         const handleValidationResultPass = () => {
-          let {
-            specActions,
-            operation,
-            path,
-            method,
-            specSelectors,
-            oas3Selectors,
-          } = props;
+          let { path, method, specSelectors, oas3Selectors } = props;
 
-          console.log('validate via server');
           // create Parameter
           const parameter = createParameters(props);
           const reqBody = oas3Selectors.requestBodyValue(path, method);
@@ -168,30 +142,20 @@ export default function ValidateAndExecutePlugin(system: any) {
             path,
             method
           );
-          // const specStr = specSelectors.specStr();
           const specJson = specSelectors.specJson().toJS();
 
           setState({
             isLoading: true,
+            validationErrors: [],
             request: {
               path,
               method,
               parameter,
               reqBody,
               requestBodyContentType,
-              // specStr,
               specJson,
             },
           });
-          // setRequest({
-          //   path,
-          //   method,
-          //   parameter,
-          //   reqBody,
-          //   RequestBodyContentType,
-          // });
-
-          console.log('state.request: ', state.request);
         };
 
         const validateRequest = (request: any) => {
@@ -210,7 +174,13 @@ export default function ValidateAndExecutePlugin(system: any) {
                 const data = await response.json();
                 if (response.ok) {
                   console.log({ data });
-                  setState({ isLoading: false, request });
+
+                  setState({
+                    isLoading: false,
+                    request,
+                    validationErrors:
+                      data.error == null ? [] : data.error.errors,
+                  });
                 } else {
                   const error = {
                     message: data?.errors
@@ -219,8 +189,8 @@ export default function ValidateAndExecutePlugin(system: any) {
                   };
                   return Promise.reject(error);
                 }
-              } catch (e) {
-                console.log(e);
+              } catch (err) {
+                console.log(err);
               }
             });
         };
@@ -248,7 +218,6 @@ export default function ValidateAndExecutePlugin(system: any) {
                 type="button"
                 className="btn opblock-control__btn validate-btn"
                 onClick={() => {
-                  console.log('Validate on clicked started');
                   let paramsResult = handleValidateParameters();
                   let requestBodyResult = handleValidateRequestBody();
                   let isPass = paramsResult && requestBodyResult;
@@ -264,6 +233,17 @@ export default function ValidateAndExecutePlugin(system: any) {
                 <div className="loading"></div>
               </div>
             ) : null}
+            {state.validationErrors &&
+            state.validationErrors.length <= 0 ? null : (
+              <div className="validation-errors errors-wrapper validation-errors-textAlign">
+                Please correct the following validation errors and try again.
+                <ul>
+                  {state.validationErrors.map((error: any, index: any) => (
+                    <li key={index}> {error.customMessage} </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </>
         );
       },

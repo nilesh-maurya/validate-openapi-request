@@ -96,3 +96,7 @@ button:focus-visible {
   border-color: #93c572;
   color: #fff;
 }
+
+.validation-errors-textAlign {
+  text-align: initial;
+}

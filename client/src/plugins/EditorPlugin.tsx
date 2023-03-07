@@ -34,7 +34,6 @@ export default function EditorPlugin() {
                   }}
                   onChange={(e, value) => {
                     specActions.updateSpec(e);
-                    // console.log({ e, value });
                   }}
                 />
               </div>

@@ -109,7 +109,6 @@ async function getRequestValidator({
 }) {
   const parsedSpec = await SwaggerParser.validate(specJson);
   const parsedSpecCopy = cloneDeep(parsedSpec);
-  // console.log(JSON.stringify(parsedSpecCopy));
   const opt = {
     parsedSpec: parsedSpecCopy,
     path,
@@ -119,10 +118,12 @@ async function getRequestValidator({
   const customOption = {
     parameters: getParametersForOpenApiRV(opt),
     // will provide ref (actual schema is provided in schemas:RequestBody)
-    requestBody: getRequestBodyForOpenApiRV(opt),
-    schemas: {
-      RequestBody: getRequestBodySchemaForOpenApiRV(opt),
-    },
+    requestBody: requestBodyContentType ? getRequestBodyForOpenApiRV(opt) : {},
+    schemas: requestBodyContentType
+      ? {
+          RequestBody: getRequestBodySchemaForOpenApiRV(opt),
+        }
+      : {},
     errorTransformer: (_, jsonSchemaError) => {
       if (jsonSchemaError.instancePath.startsWith("/body")) {
         jsonSchemaError.instancePath = jsonSchemaError.instancePath.slice(5);
@@ -155,13 +156,12 @@ async function getRequestValidator({
       });
       return jsonSchemaError;
     },
-    // customFormats: defaultFn(specOption.customFormats),
     ajvOptions: {
       allErrors: true,
+      coerceTypes: true,
     },
   };
 
-  // console.log(JSON.stringify(customOption));
   return new OpenAPIRequestValidator(customOption);
 }
 
