@@ -161,7 +161,7 @@ export default function ValidateAndExecutePlugin(system: any) {
         const validateRequest = (request: any) => {
           console.log('making request: ', request);
           return window
-            .fetch(import.meta.env.BACKEND_URL, {
+            .fetch(import.meta.env.VITE_BACKEND_URL, {
               method: 'POST',
               headers: {
                 'content-type': 'application/json;charset=UTF-8',
