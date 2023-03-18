@@ -16,6 +16,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "lodash.clonedeep": "^4.5.0",
+    "openapi-request-coercer": "^12.1.0",
     "openapi-request-validator": "^12.1.0"
   },
   "devDependencies": {

@@ -1,7 +1,6 @@
-const { parse } = require("@apidevtools/swagger-parser");
 const SwaggerParser = require("@apidevtools/swagger-parser");
-const { json } = require("body-parser");
 const OpenAPIRequestValidator = require("openapi-request-validator").default;
+const OpenAPIRequestCoercer = require("openapi-request-coercer").default;
 const cloneDeep = require("lodash.clonedeep");
 
 function getParametersForOpenApiRV({ parsedSpec, path, method }) {
@@ -97,18 +96,29 @@ function getRequestBodySchemaForOpenApiRV({
     excludeList: ["x-swagger-router-model", "xml"],
   };
   const newSchema = traverseSchema(schema, option);
-  // console.log(JSON.stringify(newSchema));
   return newSchema;
 }
 
-async function getRequestValidator({
-  path,
-  method,
-  specJson,
-  requestBodyContentType,
-}) {
+function getCoercedRequest(parameters, req) {
+  if (!Array.isArray(parameters)) {
+    parameters = [];
+  }
+
+  const coercer = new OpenAPIRequestCoercer({
+    enableObjectCoercion: true,
+    parameters,
+  });
+
+  coercer.coerce(req);
+
+  return req;
+}
+
+async function getRequestAndValidator(specObj, requestObj) {
+  const { path, method, specJson, requestBodyContentType } = specObj;
   const parsedSpec = await SwaggerParser.validate(specJson);
   const parsedSpecCopy = cloneDeep(parsedSpec);
+
   const opt = {
     parsedSpec: parsedSpecCopy,
     path,
@@ -158,17 +168,22 @@ async function getRequestValidator({
     },
     ajvOptions: {
       allErrors: true,
-      coerceTypes: true,
     },
   };
 
-  return new OpenAPIRequestValidator(customOption);
+  return {
+    requestValidator: new OpenAPIRequestValidator(customOption),
+    modifiedRequest: getCoercedRequest(customOption.parameters, requestObj.req), // mainly parameters
+  };
 }
 
-async function validate(specObj, request) {
-  const requestValidator = await getRequestValidator(specObj);
+async function validate(specObj, requestObj) {
+  const { requestValidator, modifiedRequest } = await getRequestAndValidator(
+    specObj,
+    requestObj
+  );
 
-  const errors = requestValidator.validateRequest(request);
+  const errors = requestValidator.validateRequest(modifiedRequest);
   return errors;
 }
 

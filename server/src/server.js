@@ -36,19 +36,21 @@ app.post("/validate", async (req, res) => {
     }
 
     const requestObj = {
-      headers: {
-        "content-type": req.body.requestBodyContentType,
-        ...req.body.parameter.header,
+      clientReq: req.body,
+      req: {
+        headers: {
+          "content-type": req.body.requestBodyContentType,
+          ...req.body.parameter.header,
+        },
+        query: {
+          ...req.body.parameter.query,
+        },
+        params: {
+          ...req.body.parameter.path,
+        },
+        body: JSON.parse(req.body.reqBody),
       },
-      query: {
-        ...req.body.parameter.query,
-      },
-      params: {
-        ...req.body.parameter.path,
-      },
-      body: JSON.parse(req.body.reqBody),
     };
-
     const result = await validate(specObj, requestObj);
     res.json({
       resultStatus: result != undefined ? "Failed" : "Success",
@@ -56,6 +58,18 @@ app.post("/validate", async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+    res.json({
+      resultStatus: "Failed",
+      error: {
+        errors: [
+          {
+            customMessage:
+              "Something Went Wrong. Please check request/OpenAPI spec or raise issue on Github",
+            ...err,
+          },
+        ],
+      },
+    });
   }
 });
 
