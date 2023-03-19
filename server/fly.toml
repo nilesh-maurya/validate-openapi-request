@@ -1,13 +1,12 @@
-# fly.toml file generated for validate-openapi-req-backend on 2023-03-19T16:28:19+05:30
+# fly.toml file generated for validate-openapi-req-server on 2023-03-19T18:39:54+05:30
 
-app = "validate-openapi-req-backend"
+app = "validate-openapi-req-server"
 kill_signal = "SIGINT"
 kill_timeout = 5
-primary_region = "hkg"
+primary_region = "bos"
 processes = []
 
 [env]
-  PORT = "8080"
 
 [experimental]
   auto_rollback = true
