@@ -94,6 +94,7 @@ export default function ValidateAndExecutePlugin(system: any) {
 
         const [state, setState] = useState<any>({
           isLoading: false,
+          validationResult: null,
           validationErrors: [],
         });
 
@@ -117,6 +118,7 @@ export default function ValidateAndExecutePlugin(system: any) {
 
           setState({
             isLoading: true,
+            validationResult: null,
             validationErrors: [],
             request: {
               path,
@@ -148,6 +150,7 @@ export default function ValidateAndExecutePlugin(system: any) {
                   setState({
                     isLoading: false,
                     request,
+                    validationResult: data.resultStatus,
                     validationErrors:
                       data.error == null ? [] : data.error.errors,
                   });
@@ -183,6 +186,28 @@ export default function ValidateAndExecutePlugin(system: any) {
 
         return (
           <>
+            {state.validationResult === 'Success' ? (
+              <div className="success-validation-toast">
+                Validation Successful! Request is correct as per schema.
+              </div>
+            ) : null}
+
+            {state.validationErrors &&
+            state.validationErrors.length <= 0 ? null : (
+              <div className="validation-errors errors-wrapper validation-errors-textAlign">
+                Please correct the following validation errors and try again.
+                <ul>
+                  {state.validationErrors.map((error: any, index: any) => (
+                    <li key={index}> {error.customMessage} </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {state.isLoading ? (
+              <div className="loading-container">
+                <div className="loading"></div>
+              </div>
+            ) : null}
             <div className="btn-wrapper">
               <button
                 type="button"
@@ -199,27 +224,15 @@ export default function ValidateAndExecutePlugin(system: any) {
               <OGExecute
                 {...props}
                 onExecute={() => {
-                  setState({ isLoading: false, validationErrors: [] });
+                  setState({
+                    isLoading: false,
+                    validationResult: null,
+                    validationErrors: [],
+                  });
                   props.onExecute();
                 }}
               />
             </div>
-            {state.isLoading ? (
-              <div className="loading-container">
-                <div className="loading"></div>
-              </div>
-            ) : null}
-            {state.validationErrors &&
-            state.validationErrors.length <= 0 ? null : (
-              <div className="validation-errors errors-wrapper validation-errors-textAlign">
-                Please correct the following validation errors and try again.
-                <ul>
-                  {state.validationErrors.map((error: any, index: any) => (
-                    <li key={index}> {error.customMessage} </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </>
         );
       },

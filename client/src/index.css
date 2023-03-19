@@ -103,6 +103,16 @@ button:focus-visible {
   gap: 8px;
 }
 
+.success-validation-toast {
+  animation: scaleUp 0.5s;
+  background: rgba(0, 151, 83, 0.1);
+  border: 2px solid #00b95c;
+  border-radius: 4px;
+  margin: 20px;
+  padding: 10px 20px;
+  text-align: center;
+}
+
 .validation-errors-textAlign {
   text-align: initial;
 }
