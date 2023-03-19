@@ -91,10 +91,16 @@ button:focus-visible {
   justify-content: space-around;
 }
 
-.btn-wrapper .validate-btn {
+.opblock-body .validate-btn {
   background-color: #93c572;
   border-color: #93c572;
   color: #fff;
+}
+
+.swagger-ui .btn-group {
+  padding: 30px;
+  display: grid;
+  gap: 8px;
 }
 
 .validation-errors-textAlign {

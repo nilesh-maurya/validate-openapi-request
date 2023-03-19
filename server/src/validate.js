@@ -142,7 +142,11 @@ async function getRequestAndValidator(specObj, requestObj) {
         }
       }
 
-      jsonSchemaError.customMessage = `ERROR - Path: '${jsonSchemaError.instancePath}' `;
+      jsonSchemaError.customMessage = `ERROR `;
+      jsonSchemaError.customMessage += jsonSchemaError.location
+        ? `in request ${jsonSchemaError.location} `
+        : "";
+      jsonSchemaError.customMessage += `- Path: '${jsonSchemaError.instancePath}' `;
 
       switch (jsonSchemaError.keyword) {
         case "type":

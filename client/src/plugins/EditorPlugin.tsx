@@ -19,6 +19,19 @@ export default function EditorPlugin() {
         const [theme, setTheme] = React.useState('vs-dark');
 
         setSashSize(30);
+
+        const onEditorChange = (e: any, value: any) => {
+          specActions.updateSpec(e);
+        };
+
+        React.useEffect(() => {
+          if (value == '') {
+            const specStr = specSelectors.specStr();
+            console.log('updating editor with ', { specStr });
+            setValue(specStr);
+          }
+        });
+
         return (
           <Allotment>
             <Allotment.Pane>
@@ -29,12 +42,7 @@ export default function EditorPlugin() {
                   language={language}
                   value={value}
                   options={editorOptions}
-                  onMount={() => {
-                    setValue(specSelectors.specStr());
-                  }}
-                  onChange={(e, value) => {
-                    specActions.updateSpec(e);
-                  }}
+                  onChange={onEditorChange}
                 />
               </div>
             </Allotment.Pane>

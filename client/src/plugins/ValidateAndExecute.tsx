@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// import useAsync from '../utils/useAsync';
 
 export default function ValidateAndExecutePlugin(system: any) {
   return {
@@ -226,7 +225,13 @@ export default function ValidateAndExecutePlugin(system: any) {
               >
                 Validate
               </button>
-              <OGExecute {...props} />
+              <OGExecute
+                {...props}
+                onExecute={() => {
+                  setState({ isLoading: false, validationErrors: [] });
+                  props.onExecute();
+                }}
+              />
             </div>
             {state.isLoading ? (
               <div className="loading-container">

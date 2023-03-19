@@ -63,8 +63,7 @@ app.post("/validate", async (req, res) => {
       error: {
         errors: [
           {
-            customMessage:
-              "Something Went Wrong. Please check request/OpenAPI spec or raise issue on Github",
+            customMessage: "Something Went Wrong.",
             ...err,
           },
         ],
