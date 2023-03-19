@@ -27,7 +27,6 @@ export default function EditorPlugin() {
         React.useEffect(() => {
           if (value == '') {
             const specStr = specSelectors.specStr();
-            console.log('updating editor with ', { specStr });
             setValue(specStr);
           }
         });

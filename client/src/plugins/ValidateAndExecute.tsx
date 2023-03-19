@@ -5,14 +5,12 @@ export default function ValidateAndExecutePlugin(system: any) {
     wrapComponents: {
       execute: (OGExecute: any, system: any) => (props: any) => {
         const handleValidateParameters = () => {
-          console.log('Validate parameter started');
           let { specSelectors, specActions, path, method } = props;
           specActions.validateParams([path, method]);
           return specSelectors.validateBeforeExecute([path, method]);
         };
 
         const handleValidateRequestBody = () => {
-          console.log('Validate requestBody started');
           let { path, method, specSelectors, oas3Selectors, oas3Actions } =
             props;
           let validationErrors = {
@@ -35,33 +33,8 @@ export default function ValidateAndExecutePlugin(system: any) {
             method
           );
 
-          console.log({
-            path,
-            method,
-            oas3RequestBodyValue,
-            // oas3RequestBodyValueJS: oas3RequestBodyValue.toJS(),
-            oas3RequestContentType,
-            oas3RequiredRequestBodyContentType,
-            oas3ValidateBeforeExecuteSuccess,
-            parameterValues: specSelectors
-              .parameterValues([props.path, props.method])
-              .toJS(),
-            state: system.getState(),
-            requestBodyInclusionSetting:
-              oas3Selectors.requestBodyInclusionSetting(path, method),
-          });
-
-          console.log({
-            props: props,
-            specStr: specSelectors.specStr(),
-            specJson: specSelectors.specJson().toJS(),
-            specJsonWithResolvedSubtrees:
-              specSelectors.specJsonWithResolvedSubtrees(),
-          });
-
           if (!oas3ValidateBeforeExecuteSuccess) {
             validationErrors.missingBodyValue = true;
-            console.log('Body:', { validationErrors });
             oas3Actions.setRequestBodyValidateError({
               path,
               method,
@@ -84,7 +57,6 @@ export default function ValidateAndExecutePlugin(system: any) {
             validationErrors.missingRequiredKeys.push(missingKey);
           });
 
-          console.log({ validationErrors });
           oas3Actions.setRequestBodyValidateError({
             path,
             method,
@@ -168,7 +140,6 @@ export default function ValidateAndExecutePlugin(system: any) {
               body: JSON.stringify(request),
             })
             .then(async (response) => {
-              console.log('response: ', response);
               try {
                 const data = await response.json();
                 if (response.ok) {
