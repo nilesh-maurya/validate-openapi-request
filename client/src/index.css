@@ -116,3 +116,9 @@ button:focus-visible {
 .validation-errors-textAlign {
   text-align: initial;
 }
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #fff;
+  }
+}
