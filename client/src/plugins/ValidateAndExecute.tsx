@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import server from "../backend/server.js"
+// @ts-ignore
+import server from "../backend/server"
 
 export default function ValidateAndExecutePlugin(system: any) {
   return {
@@ -132,7 +133,7 @@ export default function ValidateAndExecutePlugin(system: any) {
           });
         };
 
-        const validateRequest = (request: any) => {
+        const validateRequest = async (request: any) => {
           console.log('Hitting Backend(in client) to validate request: ', request);
 
           try {

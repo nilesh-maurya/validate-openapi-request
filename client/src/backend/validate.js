@@ -1,7 +1,7 @@
-const SwaggerParser = require("@apidevtools/swagger-parser");
-const OpenAPIRequestValidator = require("openapi-request-validator").default;
-const OpenAPIRequestCoercer = require("openapi-request-coercer").default;
-const cloneDeep = require("lodash.clonedeep");
+import * as SwaggerParser from "@apidevtools/swagger-parser"
+import OpenAPIRequestValidator from "openapi-request-validator"
+import OpenAPIRequestCoercer from "openapi-request-coercer"
+import cloneDeep from "lodash.clonedeep"
 
 function getParametersForOpenApiRV({ parsedSpec, path, method }) {
   return parsedSpec.paths[path][method].parameters;
@@ -191,4 +191,4 @@ async function validate(specObj, requestObj) {
   return errors;
 }
 
-module.exports = validate;
+export default validate;

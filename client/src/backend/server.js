@@ -64,4 +64,6 @@ import validate from "./validate";
     
 }
 
-export default server = {ValidateRequest}
+const server = { ValidateRequest }
+
+export default server;
