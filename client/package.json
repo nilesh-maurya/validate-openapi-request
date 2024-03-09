@@ -13,7 +13,11 @@
     "allotment": "^1.18.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "swagger-ui-react": "^4.15.5"
+    "swagger-ui-react": "^4.15.5",
+    "@apidevtools/swagger-parser": "^10.1.0",
+    "lodash.clonedeep": "^4.5.0",
+    "openapi-request-coercer": "^12.1.0",
+    "openapi-request-validator": "^12.1.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.26",

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import server from "../backend/server.js"
 
 export default function ValidateAndExecutePlugin(system: any) {
   return {
@@ -132,40 +133,22 @@ export default function ValidateAndExecutePlugin(system: any) {
         };
 
         const validateRequest = (request: any) => {
-          console.log('making request: ', request);
-          return window
-            .fetch(import.meta.env.VITE_BACKEND_URL, {
-              method: 'POST',
-              headers: {
-                'content-type': 'application/json;charset=UTF-8',
-              },
-              body: JSON.stringify(request),
-            })
-            .then(async (response) => {
-              try {
-                const data = await response.json();
-                if (response.ok) {
-                  console.log({ data });
+          console.log('Hitting Backend(in client) to validate request: ', request);
 
-                  setState({
-                    isLoading: false,
-                    request,
-                    validationResult: data.resultStatus,
-                    validationErrors:
-                      data.error == null ? [] : data.error.errors,
-                  });
-                } else {
-                  const error = {
-                    message: data?.errors
-                      ?.map((e: any) => e.message)
-                      .join('\n'),
-                  };
-                  return Promise.reject(error);
-                }
-              } catch (err) {
-                console.log(err);
-              }
-            });
+          try {
+            const data = await server.ValidateRequest({ body: request, })
+              console.log({ data });
+              setState({
+                isLoading: false,
+                request,
+                validationResult: data.resultStatus,
+                validationErrors:
+                  data.error == null ? [] : data.error.errors,
+              });
+          } catch (err) {
+            console.log(err);
+          }
+
         };
 
         const handleValidationResultFail = () => {
@@ -193,7 +176,7 @@ export default function ValidateAndExecutePlugin(system: any) {
             ) : null}
 
             {state.validationErrors &&
-            state.validationErrors.length <= 0 ? null : (
+              state.validationErrors.length <= 0 ? null : (
               <div className="validation-errors errors-wrapper validation-errors-textAlign">
                 Please correct the following validation errors and try again.
                 <ul>
