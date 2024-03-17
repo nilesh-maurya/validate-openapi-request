@@ -1,4 +1,5 @@
 const express = require("express");
+require("log-timestamp");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const validate = require("./validate");
