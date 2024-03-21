@@ -58,14 +58,15 @@ app.post("/validate", async (req, res) => {
       error: result != undefined ? result : null,
     });
   } catch (err) {
-    console.log(err);
+    console.log("Error: ", err);
     res.json({
       resultStatus: "Failed",
       error: {
         errors: [
           {
             customMessage: "Something Went Wrong.",
-            ...err,
+            stack: err.stack,
+            errMessage: err.message
           },
         ],
       },

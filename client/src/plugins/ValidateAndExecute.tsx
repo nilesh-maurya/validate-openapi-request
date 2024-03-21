@@ -198,7 +198,7 @@ export default function ValidateAndExecutePlugin(system: any) {
                 Please correct the following validation errors and try again.
                 <ul>
                   {state.validationErrors.map((error: any, index: any) => (
-                    <li key={index}> {error.customMessage} </li>
+                    <li key={index}> {error.customMessage} {error.errMessage ? <span>{error.errMessage}</span> : ""} </li>
                   ))}
                 </ul>
               </div>
