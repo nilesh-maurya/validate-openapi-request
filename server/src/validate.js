@@ -116,7 +116,11 @@ function getCoercedRequest(parameters, req) {
 
 async function getRequestAndValidator(specObj, requestObj) {
   const { path, method, specJson, requestBodyContentType } = specObj;
-  const parsedSpec = await SwaggerParser.validate(specJson);
+  const parsedSpec = await SwaggerParser.validate(specJson, {
+    resolve: {
+      external: false
+    }
+  });
   const parsedSpecCopy = cloneDeep(parsedSpec);
 
   const opt = {
